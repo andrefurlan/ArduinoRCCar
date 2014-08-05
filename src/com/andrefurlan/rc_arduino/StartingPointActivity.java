@@ -218,12 +218,13 @@ public class StartingPointActivity extends Activity implements
 
 			@Override
 			public void onClick(View v) {
-				// Intent startRCView = new Intent("android.intent.action.RC");
-				// startActivity(startRCView);
-				int a = 6;
-				ByteBuffer bb = ByteBuffer.allocate(4);
-				bb.putInt(a);
-				connectedThread.write(bb.array());
+				
+				Intent startRCView = new Intent("android.intent.action.RC");
+				startActivity(startRCView);
+//				int a = 6;
+//				ByteBuffer bb = ByteBuffer.allocate(4);
+//				bb.putInt(a);
+//				connectedThread.write(bb.array());
 			}
 		});
 
@@ -231,8 +232,8 @@ public class StartingPointActivity extends Activity implements
 
 			@Override
 			public void onClick(View v) {
-//				startDiscovery();
-//				btAdapter.cancelDiscovery();
+				startDiscovery();
+				btAdapter.cancelDiscovery();
 				
 			}
 		});
@@ -260,13 +261,12 @@ public class StartingPointActivity extends Activity implements
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		
 		btAdapter.cancelDiscovery();
 		if (arrayAdapter.getItem(position).contains("paired")) {
 			BluetoothDevice selectedDevice = (BluetoothDevice) devicesSet
 					.toArray()[position];
 			ConnectThread connect = new ConnectThread(selectedDevice);
-			Toast.makeText(getApplicationContext(), selectedDevice.getName(),
-					Toast.LENGTH_SHORT).show();
 			connect.start();
 
 		}
@@ -332,6 +332,7 @@ public class StartingPointActivity extends Activity implements
 				// Connect the device through the socket. This will block
 				// until it succeeds or throws an exception
 				mmSocket.connect();
+				//TODO
 				mBtSocket = mmSocket;
 
 				Log.i(tag, "connect - succeeded");
