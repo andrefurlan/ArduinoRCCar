@@ -43,26 +43,22 @@ import android.widget.Toast;
 public class StartingPointActivity extends Activity implements
 		OnItemClickListener {
 
-	Button startButton;
-	Button scanButton;
-	Switch btSwitch;
-	BluetoothAdapter btAdapter;
-	ArrayAdapter<String> arrayAdapter;
-	ListView devicesListView;
-	boolean didITurnTheBtAdaptor;
-	Set<BluetoothDevice> devicesSet;
-	List<String> pairedDevices;
-	IntentFilter btFilter;
-	BroadcastReceiver btReceiver;
-	BluetoothSocket mBtSocket;
-	ConnectedThread connectedThread;
+	private Button startButton;
+	private Button scanButton;
+	private Switch btSwitch;
+	private BluetoothAdapter btAdapter;
+	private ArrayAdapter<String> arrayAdapter;
+	private ListView devicesListView;
+	private boolean didITurnTheBtAdaptor;
+	private Set<BluetoothDevice> devicesSet;
+	private IntentFilter btFilter;
+	private BroadcastReceiver btReceiver;
+	protected static BluetoothSocket connectedSocket;
 
 	private static final UUID MY_UUID = UUID
 			.fromString("00001101-0000-1000-8000-00805F9B34FB");
-	// private static final UUID MY_UUID =
-	// UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
 	protected static final int SUCCESS_CONNECT = 0;
-	protected static final int MESSAGE_READ = 1;
+	protected static final int UNSUCCESS_CONNECT = 1;
 	String tag = "debugging";
 	private static Handler mHandler;
 
@@ -75,7 +71,12 @@ public class StartingPointActivity extends Activity implements
 		checkBtEnable();
 		setBtSwitchListener();
 		getPairedDevices();
-		mHandler = new HandlerExtension();
+
+	}
+
+	public BluetoothSocket getConnectSocket() {
+		return connectedSocket;
+
 	}
 
 	private void startDiscovery() {
@@ -107,7 +108,6 @@ public class StartingPointActivity extends Activity implements
 				arrayAdapter.add(d.getName() + " (paired)\n" + d.getAddress());
 			}
 		}
-
 	}
 
 	private void setBtSwitchListener() {
@@ -164,7 +164,6 @@ public class StartingPointActivity extends Activity implements
 		startButton = (Button) findViewById(R.id.start_button);
 		scanButton = (Button) findViewById(R.id.scan_button);
 		btSwitch = (Switch) findViewById(R.id.bt_switch);
-		pairedDevices = new ArrayList<String>();
 		devicesListView = (ListView) findViewById(R.id.btDevicesList);
 		devicesListView.setOnItemClickListener(this);
 		btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -172,6 +171,7 @@ public class StartingPointActivity extends Activity implements
 				android.R.layout.simple_list_item_1, 0);
 		devicesListView.setAdapter(arrayAdapter);
 		btFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+		mHandler = new HandlerExtension();
 		setBtReceiver();
 	}
 
@@ -218,13 +218,17 @@ public class StartingPointActivity extends Activity implements
 
 			@Override
 			public void onClick(View v) {
-				
-				Intent startRCView = new Intent("android.intent.action.RC");
-				startActivity(startRCView);
-//				int a = 6;
-//				ByteBuffer bb = ByteBuffer.allocate(4);
-//				bb.putInt(a);
-//				connectedThread.write(bb.array());
+
+				if (connectedSocket == null) {
+					Toast.makeText(
+							getApplicationContext(),
+							"Phone not connected to RC car, please connect first",
+							Toast.LENGTH_SHORT).show();
+				} else {
+					Intent startRCView = new Intent("android.intent.action.RC");
+					startActivity(startRCView);
+					
+				}
 			}
 		});
 
@@ -234,7 +238,7 @@ public class StartingPointActivity extends Activity implements
 			public void onClick(View v) {
 				startDiscovery();
 				btAdapter.cancelDiscovery();
-				
+
 			}
 		});
 	}
@@ -261,7 +265,7 @@ public class StartingPointActivity extends Activity implements
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		
+
 		btAdapter.cancelDiscovery();
 		if (arrayAdapter.getItem(position).contains("paired")) {
 			BluetoothDevice selectedDevice = (BluetoothDevice) devicesSet
@@ -271,35 +275,6 @@ public class StartingPointActivity extends Activity implements
 
 		}
 
-	}
-
-	private final class HandlerExtension extends Handler {
-		@Override
-		public void handleMessage(Message msg) {
-
-			Log.i(tag, "in handler");
-			super.handleMessage(msg);
-			switch (msg.what) {
-			case SUCCESS_CONNECT:
-				// DO something
-				connectedThread = new ConnectedThread((BluetoothSocket) msg.obj);
-				connectedThread.start();
-				Toast.makeText(getApplicationContext(), "Connected",
-						Toast.LENGTH_SHORT).show();
-				String s = "successfully connected";
-				connectedThread.write(s.getBytes());
-				Log.i(tag, "connected");
-				break;
-			case MESSAGE_READ:
-				byte[] readBuf = (byte[]) msg.obj;
-				Toast.makeText(getApplicationContext(), "oh well",
-						Toast.LENGTH_SHORT).show();
-				String string = new String(readBuf);
-				Toast.makeText(getApplicationContext(), string,
-						Toast.LENGTH_SHORT).show();
-				break;
-			}
-		}
 	}
 
 	private class ConnectThread extends Thread {
@@ -332,11 +307,9 @@ public class StartingPointActivity extends Activity implements
 				// Connect the device through the socket. This will block
 				// until it succeeds or throws an exception
 				mmSocket.connect();
-				//TODO
-				mBtSocket = mmSocket;
-
 				Log.i(tag, "connect - succeeded");
 			} catch (IOException connectException) {
+				mHandler.obtainMessage(UNSUCCESS_CONNECT, mmSocket).sendToTarget();
 				Log.i(tag, "connect failed");
 				// Unable to connect; close the socket and get out
 				try {
@@ -346,14 +319,13 @@ public class StartingPointActivity extends Activity implements
 				return;
 			}
 
-			mHandler.obtainMessage(SUCCESS_CONNECT, mmSocket).sendToTarget();
 			// Do work to manage the connection (in a separate thread)
 			manageConnectedSocket(mmSocket);
 		}
 
 		private void manageConnectedSocket(BluetoothSocket mmSocket2) {
-			// TODO Auto-generated method stub
-
+			mHandler.obtainMessage(SUCCESS_CONNECT, mmSocket).sendToTarget();
+			connectedSocket = mmSocket2;
 		}
 
 		/** Will cancel an in-progress connection, and close the socket */
@@ -363,67 +335,27 @@ public class StartingPointActivity extends Activity implements
 			} catch (IOException e) {
 			}
 		}
+
 	}
 
-	private class ConnectedThread extends Thread {
-		private final BluetoothSocket mmSocket;
-		private final InputStream mmInStream;
-		private final OutputStream mmOutStream;
+	private final class HandlerExtension extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
 
-		public ConnectedThread(BluetoothSocket socket) {
-			mmSocket = socket;
-			InputStream tmpIn = null;
-			OutputStream tmpOut = null;
-
-			// Get the input and output streams, using temp objects because
-			// member streams are final
-			try {
-				tmpIn = socket.getInputStream();
-				tmpOut = socket.getOutputStream();
-			} catch (IOException e) {
-			}
-
-			mmInStream = tmpIn;
-			mmOutStream = tmpOut;
-		}
-
-		public void run() {
-			byte[] buffer = new byte[1024]; // buffer store for the stream
-			int bytes; // bytes returned from read()
-
-			// Keep listening to the InputStream until an exception occurs
-			while (true) {
-				try {
-					// Read from the InputStream
-					bytes = mmInStream.read(buffer);
-					// Send the obtained bytes to the UI activity
-					String s = new String(buffer);
-					Log.i(tag, s + "\nfrom read");
-					mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-							.sendToTarget();
-
-				} catch (IOException e) {
-					break;
-				}
-			}
-		}
-
-		/* Call this from the main activity to send data to the remote device */
-		public void write(byte[] bytes) {
-			try {
-				String s = new String(bytes);
-				Log.i(tag, s + "\nfrom write");
-				mmOutStream.write(bytes);
-			} catch (IOException e) {
-			}
-		}
-
-		/* Call this from the main activity to shutdown the connection */
-		public void cancel() {
-			try {
-				mmSocket.close();
-			} catch (IOException e) {
+			Log.i(tag, "in handler");
+			super.handleMessage(msg);
+			switch (msg.what) {
+			case SUCCESS_CONNECT:
+				Toast.makeText(getApplicationContext(), "Connected",
+						Toast.LENGTH_SHORT).show();
+				Log.i(tag, "connected");
+				break;
+			case UNSUCCESS_CONNECT:
+				Toast.makeText(getApplicationContext(), "Connection failed",
+						Toast.LENGTH_SHORT).show();
+				break;
 			}
 		}
 	}
+
 }
