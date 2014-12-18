@@ -53,7 +53,7 @@ public class StartingPointActivity extends Activity implements
 	private Set<BluetoothDevice> devicesSet;
 	private IntentFilter btFilter;
 	private BroadcastReceiver btReceiver;
-	protected static BluetoothSocket connectedSocket;
+	protected static BluetoothSocket connectedSocket = null;
 
 	private static final UUID MY_UUID = UUID
 			.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -219,16 +219,16 @@ public class StartingPointActivity extends Activity implements
 			@Override
 			public void onClick(View v) {
 
-				if (connectedSocket == null) {
-					Toast.makeText(
-							getApplicationContext(),
-							"Phone not connected to RC car, please connect first",
-							Toast.LENGTH_SHORT).show();
-				} else {
+//				if (connectedSocket == null) {
+//					Toast.makeText(
+//							getApplicationContext(),
+//							"Phone not connected to RC car, please connect first",
+//							Toast.LENGTH_SHORT).show();
+//				} else {
 					Intent startRCView = new Intent("android.intent.action.RC");
 					startActivity(startRCView);
 					
-				}
+//				}
 			}
 		});
 

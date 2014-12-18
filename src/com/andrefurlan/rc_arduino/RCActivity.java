@@ -40,13 +40,14 @@ public class RCActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_rc);
 		init();
-		connect();
 		setSeekBars();
-		byte code = (byte) 76;
-		byte[] output = new byte[1];
-		output[0] = code;
-		connectedThread.write(output);
-
+		if (StartingPointActivity.connectedSocket != null){
+			connect();
+			byte code = (byte) 76;
+			byte[] output = new byte[1];
+			output[0] = code;
+			connectedThread.write(output);
+		}
 	}
 	@Override
 	protected void onPause() {
@@ -146,8 +147,6 @@ public class RCActivity extends Activity {
 							connectedThread.write(output);
 							lastVValue = p;
 						}
-//						String newPos = new String ("#"+progress+"$");
-//						connectedThread.write(newPos.getBytes());
 						
 					}
 				});

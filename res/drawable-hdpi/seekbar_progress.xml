@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item android:id="@android:id/background">
+        <nine-patch
+            android:dither="true"
+            android:src="@drawable/seekbar_background" />
+    </item>
+    <item android:id="@android:id/progress">
+        <clip
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:clipOrientation="horizontal"
+            android:gravity="left" >
+            <nine-patch
+                android:dither="true"
+                android:src="@drawable/seekbar_background" />
+        </clip>
+    </item>
+</layer-list>

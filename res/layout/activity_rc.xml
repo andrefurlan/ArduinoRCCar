@@ -15,7 +15,9 @@
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         android:max="63"
-        android:progress="0" />
+        android:progress="0"
+        
+        android:thumb="@drawable/seekbar_thumb" />
 
     <SeekBar
         android:id="@+id/horizontalSeekBar"
@@ -23,15 +25,17 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:max="63"
-        android:progress="32" />
+        android:max="64"
+        android:progress="32"
+        
+        android:thumb="@drawable/seekbar_thumb" />
 
     <TextView
         android:id="@+id/vSeekBarText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
         android:layout_marginLeft="100dp"
         android:padding="5dp"
         android:text="0"
@@ -41,8 +45,8 @@
         android:id="@+id/hSeekBarText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
         android:layout_marginRight="100dp"
         android:gravity="center"
         android:padding="5dp"
@@ -54,16 +58,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/verticalSeekBar"
-        android:layout_toRightOf="@+id/verticalSeekBar"
-        android:layout_marginLeft="50dp" />
+        android:layout_marginLeft="50dp"
+        android:layout_toRightOf="@+id/verticalSeekBar" />
 
     <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/reverse_button"
-        android:layout_alignRight="@+id/reverse_button"
         android:layout_alignLeft="@+id/reverse_button"
+        android:layout_alignRight="@+id/reverse_button"
         android:gravity="center"
         android:text="Reverse"
         android:textAppearance="?android:attr/textAppearanceSmall" />
